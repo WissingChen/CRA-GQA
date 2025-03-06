@@ -1,0 +1,99 @@
+# the config for current running
+dataset:
+  # csv_path: path to a csv containing columns video_id, question, answer
+  # features_path: dictionary  to video frames
+  # qmax_words: maximum number of words for a question
+  # amax_words: maximum number of words for an answer
+  # tokenizer: BERT tokenizer
+  # a2id: answer to index mapping
+  # ivqa: whether to use iVQA or not
+  # max_feats: maximum frames to sample from a video
+  name: star
+  csv_path: data/star
+  features_path: data/star/video_feature/CLIP_L
+  causal_feature_path: data/star/causal_feature
+  # csv_path: /data3/pengchaomian/Casual-GQA2/data/nextgqa
+  # features_path: /data3/pengchaomian/Casual-GQA2/data/video_feature/CLIP_L2
+  vocab_path: 
+  batch_size: 64
+  num_thread_reader: 4
+  qmax_words: 30
+  amax_words: 38
+  max_feats: 32
+  # multi choice
+  mc: 4
+  a2id: 
+  feat_type: CLIPL
+
+model:
+  # feature_dim: dimension of the input video features
+  # word_dim: dimension of the input question features
+  # num_layers: number of transformer layers
+  # num_heads: number of transformer heads
+  # d_model: dimension for the transformer and final embedding
+  # d_ff: hidden dimension in the transformer
+  # dropout: dropout rate in the transformer
+  # vocab_size: size of the vocabulary for the masked language modeling head
+  # baseline: qa baseline does not use the video, video baseline does not use the question
+  name: CRA
+  baseline: refine
+  lan: RoBERTa
+  lan_weight_path: "/data2/chenweixing/Other/VQA/roberta-base"
+  feature_dim: 768
+  word_dim: 768
+  num_layers: 2
+  num_heads: 8
+  d_model: 768
+  d_ff: 768
+  dropout: 0.3
+  vocab_size: 50265
+  n_negs: 1
+  prop_num: 1
+  sigma: 9
+  gamma: 1
+  # control the overlap extent of different proposal, 0: no overlap, 1 no diversity
+  lamb: 0.15
+  window_sizes: [1,3,5]
+  time_penalty: # 0.1
+  align_loss: 0.5
+  do: True # False # causal intervention
+  recon_loss: # 1
+  # InfoNCEloss
+  nce_loss: 0 # 1 # 0.05
+  # trade offf with video grounding loss
+  vg_loss: 1
+  # determine the best temporal proposal during inference
+  vote: 0
+
+optim:
+  pipeline: cra
+  optimizer: Adam
+  loss: {"ce": {"vq":1, "vqa":1}, "align": {"g": 0.5}}
+  # gradient clipping
+  clip: 12
+  lr: 1.e-5
+  weight_decay: 0
+  epochs: 30
+  save_period: 1
+  # lr_scheduler: if warmup, the step will be 
+  lr_scheduler: warmup
+  step_size: 1
+  amsgrad: true
+
+stat:
+  monitor:
+    mode: max
+    metric: acc
+    early_stop: 30
+    vis: false
+    display_port: 8099
+  record_dir: ./output
+  resume: # "/data2/chenweixing/Other/VQA/GroundedVQA/Causal-GQA/output/CI/STAR/CI_Vis/checkpoint/model_best.pth"
+
+misc:
+  # the name only for this running, not the task
+  running_name: 'CRA/STAR/CRA'
+  info: "Temp[CLIP] (CRA)"
+  cuda: "2"
+  seed: 2024
+  
