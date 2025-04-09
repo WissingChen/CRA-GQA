@@ -39,29 +39,22 @@ class CRA(nn.Module):
                 print(f"Parameter {name} is on device {param.device}, expected {x.device}")
 
     def refine_forward(self, video, video_mask, answer=None, answer_id=None, mode="VQA", gsub=None):
-        # 使用Bert编码文本信息，answer_g是pooling成一个向量的文本特征，而answer_w是完整的文本特征
         answer_g, answer_w = self.lang_model(answer.to("cuda")) # [bs, mc, D] [bs, mc, l, D]
 
         #####################################
         # linguistics causal intervention
         #####################################
         
-
-        # 对视频特征使用cos-sin位置编码
         # self._check_device(self.video_model, video)
         video_f = self.video_model(video)
-        # 挑选对应的文本特征，用于G的生成
         qsn_gt = None
         if answer_id is not None and mode == "VQ":
             qsn_g = answer_g[torch.arange(answer_g.shape[0]), answer_id.squeeze(), :]
-            # qsn_w = answer_w[torch.arange(answer_w.shape[0]), answer_id.squeeze(), :].mean(dim=-2)
             qsn_gt = qsn_g
         elif answer_id is not None and mode == "VQA":
             qsn_g = answer_g.max(dim=1)[0]
-            # qsn_w = answer_w.max(dim=1)[0].mean(dim=-2)
             qsn_gt = answer_g[torch.arange(answer_g.shape[0]), answer_id.squeeze(), :]
         else:
-            # qsn_w = answer_w.max(dim=1)[0].mean(dim=-2)
             qsn_g = answer_g.max(dim=1)[0]
 
         # if self.cfgs["model"]["do"]:
@@ -70,40 +63,22 @@ class CRA(nn.Module):
             # qsn_g = self.do(qsn_g)  
             # answer_g = answer_g.view(B, M, D)
 
-        video_proj, video_attn, time_param, recon_feature = self.decoder(video_f, qsn_g, video_mask, gsub=gsub, do=self.cfgs["model"]["do"], window_sizes=self.cfgs["model"]["window_sizes"])
+        video_proj, video_attn, time_param = self.decoder(video_f, qsn_g, video_mask, gsub=gsub, do=self.cfgs["model"]["do"], window_sizes=self.cfgs["model"]["window_sizes"])
         
         answer_proj = answer_g
         
-        """
-        if self.cfgs["model"]["align_loss"]: 
-            align_loss = self.align_loss(qsn_gt, time_param["grounding_feature"]) if qsn_gt is not None else 0
-            # align_loss = align_loss + 0.1 * self.align_loss(qsn_gt, time_param["grounding_feature"], time_param["neg_grounding_feature"]) if qsn_gt is not None else 0
-            if self.cfgs["model"]["recon_loss"]:
-                align_loss_recon = self.align_loss(qsn_gt, time_param["grounding_feature"], world_feature["neg_sample"]) if qsn_gt is not None else 0
-            else:
-                align_loss_recon = 0
-        else:
-            align_loss = 0
-            align_loss_recon = 0
-        """
         outs = {"fatt": video_attn, "time_param": time_param, 
                 "align_gt": qsn_gt,
-                "recon": recon_feature
                 }
         return video_proj, answer_proj, outs
 
     def baseline_forward(self, video, video_mask, answer=None, answer_id=None, mode="VQA", gsub=None):
-        # 使用Bert编码文本信息，answer_g是pooling成一个向量的文本特征，而answer_w是完整的文本特征
         answer_g, answer_w = self.lang_model(answer.cuda()) # [bs, mc, 768], [bs, mc, n, 768]
-        # 对视频特征使用cos-sin位置编码
-        video_f = self.video_model(video) # [bs, l, 768]
-        # 挑选对应的文本特征，用于G的生成  
+        video_f = self.video_model(video) # [bs, l, 768] 
         if answer_id is not None:
             qsn_g = answer_g[torch.arange(answer_g.shape[0]), answer_id.squeeze(), :]
-            # qsn_w = answer_w[torch.arange(answer_g.shape[0]), answer_id.squeeze(), :, :]
         else:
             qsn_g = answer_g.max(dim=1)[0]
-            # qsn_w = answer_w.max(dim=1)[0]
 
         video_proj, video_attn = self.decoder(video_f, answer_w, video_mask)
         answer_proj = answer_g

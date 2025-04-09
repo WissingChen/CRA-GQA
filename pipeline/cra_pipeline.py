@@ -162,7 +162,7 @@ class CRAPipeline(BasePipeline):
 
         self.monitor.log_info(f"\nVal Set\t mean acc: {score['val_acc']:.2%}")
         if 'val_pre-hoc' in score.keys():
-            self.monitor.log_info("\n================ val_pre-hoc ================")
+            self.monitor.log_info("\n================ val_attn ================")
             _print_score(score['val_pre-hoc'])
         self.monitor.log_info("\n================ val_post-hoc ==================")
         _print_score(score['val_post-hoc'])
@@ -172,7 +172,7 @@ class CRAPipeline(BasePipeline):
 
         self.monitor.log_info(f"\nTest Set\t mean acc: {score['test_acc']:.2%}")
         if 'test_pre-hoc' in score.keys():
-            self.monitor.log_info("\n============== test_pre-hoc ================")
+            self.monitor.log_info("\n============== test_attn ================")
             _print_score(score['test_pre-hoc'])
         self.monitor.log_info("\n================ test_post-hoc ================")
         _print_score(score['test_post-hoc'])

@@ -5,7 +5,7 @@ dataset:
   features_path: data/nextqa/video_feature/CLIP_L
   causal_feature_path: data/nextgqa/causal_feature
   vocab_path: 
-  batch_size: 64 #  48
+  batch_size: 64
   num_thread_reader: 4
   qmax_words: 30
   amax_words: 38
@@ -65,12 +65,12 @@ stat:
     vis: false
     display_port: 8099
   record_dir: ./output
-  resume: # "output/CI/NextGQA/CI_Vis/checkpoint/model_best.pth"
+  resume: #
 
 misc:
   # the name only for this running, not the task
   running_name: 'CRA/NextGQA/CRA'
-  info: "Temp[CLIP] (CRA)" # add_Linguistic_BDI" add_Visual_FDI
+  info: "Temp[CLIP] (CRA)"
   cuda: "1"
-  seed: 1234
+  seed: 2024
   

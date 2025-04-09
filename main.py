@@ -32,7 +32,7 @@ def main(args):
 if __name__ == "__main__":
     parse = argparse.ArgumentParser()
     parse.add_argument("--cfg", type=str, default="config/CRA/CRA_NextGQA.yml")
-    parse.add_argument("--cuda", type=str, default="4")
+    parse.add_argument("--cuda", type=str, default="1")
     parse.add_argument("-R", type=str, default="")
     parse.add_argument("--infer", type=bool, default=False)
     args = parse.parse_args()

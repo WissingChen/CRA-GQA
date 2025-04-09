@@ -4,7 +4,6 @@ import torch.nn.functional as F
 from modules.m_cra.only_trans import clones, PositionwiseFeedForward, LayerNorm, SublayerConnection, MultiHeadedAttention
 from modules.m_cra.grounding import GroundingModule
 from modules.m_cra.causal_module import VisualIntervention
-from modules.m_cra.recon_module import ReconModule
 import math
 
 
@@ -77,24 +76,15 @@ class RefineMHA(MultiHeadedAttention):
 class DecoderLayer(nn.Module):
     def __init__(self, embed_dim, num_heads, ff_dim, dropout):
         super(DecoderLayer, self).__init__()
-        # self.self_attn = MultiHeadedAttention(num_heads, embed_dim, dropout)
         self.self_attn = RefineMHA(num_heads, embed_dim, dropout)
-        # self.cross_attn = RefineMHA(num_heads, embed_dim, dropout)
 
         self.sublayer_ff = SublayerConnection(embed_dim, dropout)
-        # self.sublayer_ff_world = SublayerConnection(embed_dim, dropout)
         
         self.feed_forward = PositionwiseFeedForward(embed_dim, ff_dim, dropout) 
         self.sublayer_self = SublayerConnection(embed_dim, dropout)
-        # self.sublayer_cross = SublayerConnection(embed_dim, dropout)
-        # self.feed_forward_world = PositionwiseFeedForward(embed_dim, ff_dim, dropout) 
 
     def forward(self, x, mask=None, wm_mode=False):
         x = self.sublayer_self(x, lambda x: self.self_attn(x, x, x, mask))
-        # x = self.sublayer_cross(x, lambda x: self.cross_attn(x, qa, qa, mask))
-        # if wm_mode:
-        #     x = self.sublayer_ff_world(x, lambda x: self.feed_forward_world(x))
-        # else:
         x = self.sublayer_ff(x, lambda x: self.feed_forward(x))
         return x
     
@@ -121,15 +111,12 @@ class Decoder(nn.Module):
         
         #### our proposed module ####
         self.grounding_module = GroundingModule()
-        # self.recon_model = ReconModule()
         self.do = VisualIntervention(self.cfgs)
 
     def forward(self, x, qa, self_mask=None, gsub=None, do=False, window_sizes=[1, 3, 5]):
-        # sim = torch.matmul(x.ga.unsqueeze(dim=-1)).softmax(dim=1)
         #####################################
         # encoding for the time relation
         #####################################
-        # ori_x = x.clone()
         for i in range(len(self.layers)):
             x = self.layers[i](x)
         x_bar = self.norm(x)
@@ -167,14 +154,6 @@ class Decoder(nn.Module):
         #####################################
         # align feature
         #####################################
-        # NOTE 1. 用batch内其他语言特征作为负样本 (VQ loss，有效)
-        # NOTE 2. 用batch内其他视觉特征作为负样本 (align loss，有效)
-        # NOTE 3. 把视觉特征划分为因果与非因果的，因果的部分应该是和语言特征具有一致性的，可以从这里考虑？
-        #         我试过用语言特征和非因果部分去重建因果部分，但是效果不佳（可能是我实现的问题）
-        #         后面也试过直接使用batch内其他样本的非因果部分与当前样本的因果部分组合，然后生成grounding权重，但是效果也不佳
-        #         最重要的是KL loss一直提升，这个任务的实现是有问题的
-        # video_proj_mask = torch.sum(x_bar * (time_param["mask"]).unsqueeze(dim=-1), dim=1)
-        # video_proj_mask = self.video_proj(video_proj_mask)
             
         time_param["grounding_feature"] = video_proj
-        return video_proj, time_param["key"], time_param, recon_feature
+        return video_proj, time_param["key"], time_param
