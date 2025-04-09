@@ -2,7 +2,7 @@
 
 [Weixing Chen](https://wissingchen.github.io/), [Yang Liu](https://yangliu9208.github.io/), Binglin Chen, Jiandong Su, Yongsen Zheng, [Liang Lin](http://www.linliang.net/)
 
-**Aelected as CVPR 2025 Highlight ! 😁😁😁**
+**Selected as CVPR 2025 Highlight! 😁😁😁**
 
 <img src="method.png" align="center" />
 
