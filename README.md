@@ -1,6 +1,7 @@
 # <a href="https://arxiv.org/pdf/2503.07635"> Cross-modal Causal Relation Alignment for Video Question Grounding </a>
-
-<img src="method.png" width="1000px" align="center" />
+[Weixing Chen](https://wissingchen.github.io/), [Yang Liu](https://yangliu9208.github.io/), Binglin Chen, Jiandong Su, Yongsen Zheng, [Liang Lin](http://www.linliang.net/)
+**Aelected as CVPR 2025 Highlight ! 😁😁😁**
+<img src="method.png" align="center" />
 
 Video question grounding (VideoQG) requires models to answer the questions and simultaneously infer the relevant video segments to support the answers. However, existing VideoQG methods usually suffer from spurious cross-modal correlations, leading to a failure to identify the dominant visual scenes that align with the intended question. Moreover, vision-language models exhibit unfaithful generalization performance and lack robustness on challenging downstream tasks such as VideoQG. In this work, we propose a novel VideoQG framework named Cross-modal Causal Relation Alignment (CRA), to eliminate spurious correlations and improve the causal consistency between question-answering and video temporal grounding. 
 
